@@ -8,6 +8,7 @@ before_install:
 deploy:
   provider: gae
   keyfile: gae-credentials.json
+  skip_cleanup: true
   project: ip-spuf-ru
   default: true
   on: master
