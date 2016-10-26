@@ -12,4 +12,6 @@ deploy:
   skip_cleanup: true
   project: ip-spuf-ru
   default: true
-  on: master
+  on:
+    branch: master
+    go: 1.6.2
