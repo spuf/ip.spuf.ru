@@ -16,7 +16,6 @@ func handler(res http.ResponseWriter, req *http.Request) {
 
 	fmt.Fprintf(res, "%s\n\n", req.RemoteAddr)
 	fmt.Fprintf(res, "%s %s %s\n", req.Method, req.RequestURI, req.Proto)
-	fmt.Fprintf(res, "Host: %s\n", req.Host)
 	var names []string
 	for name := range req.Header {
 		names = append(names, name)
