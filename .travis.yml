@@ -1,6 +1,7 @@
 language: go
 go:
   - 1.6.2
+  - tip
 
 before_install:
   - openssl aes-256-cbc -K $encrypted_b36be9dffa2c_key -iv $encrypted_b36be9dffa2c_iv -in gae-credentials.json.enc -out gae-credentials.json -d
