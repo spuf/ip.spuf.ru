@@ -22,7 +22,7 @@ func handler(res http.ResponseWriter, req *http.Request) {
 	res.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
 
 	fmt.Fprintf(res, "%s\n\n", req.RemoteAddr)
-	fmt.Fprintf(res, "%s %v %s\n", req.Method, req.URL, req.Proto)
+	fmt.Fprintf(res, "%s %s %s\n", req.Method, req.RequestURI, req.Proto)
 	var names []string
 	for name := range req.Header {
 		if _, ok := hiddenHeaders[name]; !ok {
