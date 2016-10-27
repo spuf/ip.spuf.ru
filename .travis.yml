@@ -3,6 +3,10 @@ go:
   - 1.6.2
   - tip
 
+cache:
+  - bundler
+  - pip
+
 before_install:
   - openssl aes-256-cbc -K $encrypted_1867c6df6d6e_key -iv $encrypted_1867c6df6d6e_iv -in .travis.gae-deploy.json.enc -out .travis.gae-deploy.json -d
 
