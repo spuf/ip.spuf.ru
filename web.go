@@ -7,9 +7,10 @@ import (
 )
 
 var hiddenHeaders = map[string]bool{
-	"X-Cloud-Trace-Context":  true,
-	"X-Google-Apps-Metadata": true,
-	"X-Zoo":                  true,
+	"X-Appengine-Default-Namespace": true,
+	"X-Cloud-Trace-Context":         true,
+	"X-Google-Apps-Metadata":        true,
+	"X-Zoo":                         true,
 }
 
 func init() {
