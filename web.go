@@ -6,13 +6,6 @@ import (
 	"sort"
 )
 
-var hiddenHeaders = map[string]bool{
-	"X-Appengine-Default-Namespace": true,
-	"X-Cloud-Trace-Context":         true,
-	"X-Google-Apps-Metadata":        true,
-	"X-Zoo":                         true,
-}
-
 func init() {
 	http.HandleFunc("/", handler)
 }
@@ -21,8 +14,22 @@ func handler(res http.ResponseWriter, req *http.Request) {
 	res.Header().Set("Content-Type", "text/plain")
 	res.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
 
-	fmt.Fprintf(res, "%s\n\n", req.RemoteAddr)
-	fmt.Fprintf(res, "%s %s %s\n", req.Method, req.RequestURI, req.Proto)
+	fmt.Fprint(res, RequestAsString(req))
+}
+
+var hiddenHeaders = map[string]bool{
+	"X-Appengine-Default-Namespace": true,
+	"X-Cloud-Trace-Context":         true,
+	"X-Google-Apps-Metadata":        true,
+	"X-Zoo":                         true,
+}
+
+// RequestAsString generates text representation of HTTP request
+func RequestAsString(req *http.Request) string {
+	var res string
+	res += fmt.Sprintf("%s\n\n", req.RemoteAddr)
+	res += fmt.Sprintf("%s %s %s\n", req.Method, req.RequestURI, req.Proto)
+
 	var names []string
 	for name := range req.Header {
 		if _, ok := hiddenHeaders[name]; !ok {
@@ -32,7 +39,8 @@ func handler(res http.ResponseWriter, req *http.Request) {
 	sort.Strings(names)
 	for _, name := range names {
 		for _, value := range req.Header[name] {
-			fmt.Fprintf(res, "%s: %s\n", name, value)
+			res += fmt.Sprintf("%s: %s\n", name, value)
 		}
 	}
+	return res
 }
