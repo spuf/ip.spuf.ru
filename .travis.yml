@@ -3,11 +3,8 @@ go:
 - 1.6.2
 - tip
 
-env:
-- COVERALLS_TOKEN:
-  secure: d1CVvUejljWvYDdoFceybHFNcWVsDaMNmHDkZ3jZ1PCtXosvYVKWDHFtDAVCQcekm2gnnwTH0T2zN1KYVC+L6vUyQoboosaodG+XwFnPbg6a8uTvsexaSuEPZT3PwAomjAiK8BtMfbSinJK+nllVfMMQ4/ePxh9IlHyFCOYtqnpvA1eda4wWLpLOcbooFlrb4AdurYXqe8utAxBvb312iptrShxVL7TV3YnZNFU/rJcpsj+h7TEf1oDCknTIMhNKxaPa4QmXa0vfQz4y8upEOvcAOcuFmlt4uBwkUvDcaBZ+Q0brh9wAo95FDDTvyDHUxYXrpKps2HCVD9vkLzu4wkHQWimiPefnRU2PFTfvC5+P1dnJnLnrDQ6Z4vR0cteklo/G7qEuxENOkvVtSHL8b5a9pud4sQYUNIJcJ4pK5gPkqCesnamuxNg8MwfXhGYp11u1ebjj7DmDMgx2vEahDjltYYkrTVMmRQCwPFS8YsD8UM/F6BsYIMRZEB9lQXn94MsusclyvOGoN3YMw83YY6LVPXlGm8OSIs3mn19rvFaE6lG5ewOzgh6cp1+9HHQ2iZXLrj4eSquCW8dbhaDsINyoe6hD8nm0OMYtKxbilLsHmrPSZwVQyj1A8ULp3QdumODVgEbGx4v2VVtKa+7yK3xg8OHjleVSO/BY5BV4Taw=
-
 before_install:
+- openssl aes-256-cbc -K $encrypted_1867c6df6d6e_key -iv $encrypted_1867c6df6d6e_iv -in .coveralls.yml.enc -out .coveralls.yml -d
 - openssl aes-256-cbc -K $encrypted_1867c6df6d6e_key -iv $encrypted_1867c6df6d6e_iv -in .travis.gae-deploy.json.enc -out .travis.gae-deploy.json -d
 - go get golang.org/x/tools/cmd/cover
 - go get github.com/mattn/goveralls
@@ -16,9 +13,9 @@ cache:
   directories:
   - "$(go env GOPATH)"
 
-script:
+after_success:
 - go test -v -covermode=count -coverprofile=coverage.out
-- "$(go env GOPATH)/bin/goveralls -coverprofile=coverage.out -service=travis-ci -repotoken $COVERALLS_TOKEN"
+- "$(go env GOPATH)/bin/goveralls -coverprofile=coverage.out -service=travis-ci"
 
 deploy:
   provider: gae
