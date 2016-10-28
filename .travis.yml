@@ -13,8 +13,8 @@ cache:
   directories:
   - "$(go env GOPATH)"
 
-after_success:
-- go test -v -covermode=count -coverprofile=coverage.out
+script:
+- go test -v -covermode=count -coverprofile=coverage.out ./...
 - "$(go env GOPATH)/bin/goveralls -coverprofile=coverage.out -service=travis-ci"
 
 deploy:
