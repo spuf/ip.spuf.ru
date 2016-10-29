@@ -6,20 +6,20 @@ go:
 before_install:
 - openssl aes-256-cbc -K $encrypted_1867c6df6d6e_key -iv $encrypted_1867c6df6d6e_iv -in .travis.tar.enc -out .travis.tar -d
 - tar xvf .travis.tar
-- go get golang.org/x/tools/cmd/cover
-- go get github.com/mattn/goveralls
+- go get -u golang.org/x/tools/cmd/cover
+- go get -u github.com/mattn/goveralls
 
 cache:
   directories:
-  - "$(go env GOPATH)"
+  - $(go env GOPATH)
 
 script:
 - go test -v -covermode=count -coverprofile=coverage.out ./...
-- "$(go env GOPATH)/bin/goveralls -coverprofile=coverage.out -service=travis-ci"
+- $(go env GOPATH)/bin/goveralls -coverprofile=coverage.out -service=travis-ci
 
 deploy:
   provider: gae
-  keyfile: ".travis.gae-deploy.json"
+  keyfile: .travis.gae-deploy.json
   skip_cleanup: true
   project: ip-spuf-ru
   version: master
