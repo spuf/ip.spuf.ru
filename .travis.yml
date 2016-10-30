@@ -8,6 +8,8 @@ before_install:
 - tar xvf .travis.tar
 - "[ -f $HOME/google-cloud-sdk/bin/gcloud ] || curl -L https://dl.google.com/dl/cloudsdk/channels/rapid/google-cloud-sdk.tar.gz | gzip -d | tar -x -C $HOME"
 - $HOME/google-cloud-sdk/bin/bootstrapping/install.py --usage-reporting=false --command-completion=false --path-update=false
+- export PATH=$GOPATH/bin:$HOME/google-cloud-sdk/bin:$PATH
+- gcloud --version
 - go get -u golang.org/x/tools/cmd/cover
 - go get -u github.com/mattn/goveralls
 
@@ -20,10 +22,11 @@ cache:
   - $HOME/google-cloud-sdk
 
 after_success:
-- $GOPATH/bin/goveralls -coverprofile=coverage.out -service=travis-ci
+- goveralls -coverprofile=coverage.out -service=travis-ci
 
 deploy:
   provider: gae
+  verbosity: info
   keyfile: .travis.gae-deploy.json
   skip_cleanup: true
   project: ip-spuf-ru
