@@ -30,7 +30,7 @@ deploy:
   keyfile: .travis.gae-deploy.json
   skip_cleanup: true
   project: ip-spuf-ru
-  version: master
+  version: $TRAVIS_COMMIT
   default: true
   on:
     branch: master
