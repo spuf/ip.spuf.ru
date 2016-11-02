@@ -1,7 +1,12 @@
+sudo: false
 language: go
 go:
 - 1.6.2
 - tip
+
+matrix:
+  allow_failures:
+  - go: tip
 
 before_install:
 - openssl aes-256-cbc -K $encrypted_1867c6df6d6e_key -iv $encrypted_1867c6df6d6e_iv -in .travis.tar.enc -out .travis.tar -d
@@ -30,6 +35,7 @@ deploy:
   keyfile: .travis.gae-deploy.json
   skip_cleanup: true
   project: ip-spuf-ru
+  version: master
   default: true
   on:
     branch: master
