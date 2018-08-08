@@ -1,13 +1,16 @@
-package web
+package main
 
 import (
 	"fmt"
 	"net/http"
 	"sort"
+
+	"google.golang.org/appengine"
 )
 
-func init() {
+func main() {
 	http.HandleFunc("/", handler)
+	appengine.Main()
 }
 
 func handler(res http.ResponseWriter, req *http.Request) {
