@@ -1,49 +1,81 @@
 package main
 
 import (
-	"fmt"
+	"io"
 	"net/http"
-	"sort"
-
-	"google.golang.org/appengine"
+	"net/http/httputil"
+	"os"
+	"strings"
 )
 
+type nope = struct{}
+
 func main() {
-	http.HandleFunc("/", handler)
-	appengine.Main()
-}
-
-func handler(res http.ResponseWriter, req *http.Request) {
-	res.Header().Set("Content-Type", "text/plain")
-	res.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
-
-	fmt.Fprint(res, RequestAsString(req))
-}
-
-var hiddenHeaders = map[string]bool{
-	"X-Appengine-Default-Namespace": true,
-	"X-Cloud-Trace-Context":         true,
-	"X-Google-Apps-Metadata":        true,
-	"X-Zoo":                         true,
-}
-
-// RequestAsString generates text representation of HTTP request
-func RequestAsString(req *http.Request) string {
-	var res string
-	res += fmt.Sprintf("%s\n\n", req.RemoteAddr)
-	res += fmt.Sprintf("%s %s %s\n", req.Method, req.RequestURI, req.Proto)
-
-	var names []string
-	for name := range req.Header {
-		if _, ok := hiddenHeaders[name]; !ok {
-			names = append(names, name)
-		}
+	hiddenHeaders := map[string]nope{
+		"Accept-Encoding":        nope{},
+		"Connection":             nope{},
+		"Forwarded":              nope{},
+		"Keep-Alive":             nope{},
+		"Proxy-Authorization":    nope{},
+		"TE":                     nope{},
+		"Trailer":                nope{},
+		"Transfer-Encoding":      nope{},
+		"X-Cloud-Trace-Context":  nope{},
+		"X-Forwarded-For":        nope{},
+		"X-Forwarded-Proto":      nope{},
+		"X-Google-Apps-Metadata": nope{},
 	}
-	sort.Strings(names)
-	for _, name := range names {
-		for _, value := range req.Header[name] {
-			res += fmt.Sprintf("%s: %s\n", name, value)
-		}
+	appengineHeaderPrefix := "X-Appengine-"
+	allowedAppengineHeaders := map[string]nope{
+		appengineHeaderPrefix + "City":    nope{},
+		appengineHeaderPrefix + "Country": nope{},
+		appengineHeaderPrefix + "Region":  nope{},
 	}
-	return res
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/plain")
+		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+
+		safeHeader := http.Header{}
+		userIp := r.RemoteAddr
+		for key, values := range r.Header {
+			if key == "X-Appengine-User-Ip" {
+				userIp = values[0]
+
+				continue
+			}
+			if _, ok := hiddenHeaders[key]; ok {
+				continue
+			}
+			if strings.HasPrefix(key, appengineHeaderPrefix) {
+				if _, ok := allowedAppengineHeaders[key]; !ok {
+					continue
+				}
+			}
+
+			for _, value := range values {
+				safeHeader.Add(key, value)
+			}
+		}
+		r.Header = safeHeader
+
+		dump, err := httputil.DumpRequest(r, true)
+		if err != nil {
+			statusInternalServerError := http.StatusInternalServerError
+			http.Error(w, http.StatusText(statusInternalServerError), statusInternalServerError)
+
+			return
+		}
+
+		io.WriteString(w, userIp)
+		io.WriteString(w, "\n\n")
+		w.Write(dump)
+	})
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	if err := http.ListenAndServe(":"+port, nil); err != nil {
+		panic(err)
+	}
 }
