@@ -1,0 +1,11 @@
+name: Go
+on: [push]
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+    - name: Go Action
+      uses: actions-contrib/go@v0.1.0
+    - name: golangci-lint
+      uses: actions-contrib/golangci-lint@v1
