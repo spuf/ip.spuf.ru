@@ -1,0 +1,22 @@
+name: Deploy
+on:
+  push:
+    branches:
+    - master
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - uses: GoogleCloudPlatform/github-actions/setup-gcloud@master
+      with:
+        service_account_email: ${{ secrets.GAE_EMAIL }}
+        service_account_key: ${{ secrets.GAE_KEY }}
+
+    - name: Deploy
+      run: gcloud app deploy
