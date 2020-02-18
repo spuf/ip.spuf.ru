@@ -51,7 +51,7 @@ func TestTextHtml(t *testing.T) {
 
 	resBody, _ := ioutil.ReadAll(res.Body)
 	res.Body.Close()
-	if string(resBody) != "<style>body{background-color:#fff;color:#000}@media screen and (prefers-color-scheme:dark){body{background-color:#000;color:#fff}}</style><pre style=word-wrap:break-word;white-space:pre-wrap>192.0.2.1:1234\n\nGET / HTTP/1.1\nHost: example.com\nAccept: text/html\n\n</pre>" {
+	if string(resBody) != "<meta name=viewport content=width=device-width,initial-scale=1,shrink-to-fit=no><style>body{background-color:#fff;color:#000}@media screen and (prefers-color-scheme:dark){body{background-color:#000;color:#fff}}</style><pre style=word-wrap:break-word;white-space:pre-wrap>192.0.2.1:1234\n\nGET / HTTP/1.1\nHost: example.com\nAccept: text/html\n\n</pre>" {
 		t.Fatalf("unexpected body: %s", resBody)
 	}
 }
