@@ -103,9 +103,34 @@ func newHandler() http.Handler {
 
 		var res bytes.Buffer
 		if contentType == contentHtml {
-			res.WriteString("<meta name=viewport content=width=device-width,initial-scale=1,shrink-to-fit=no><style>body{background-color:#fff;color:#000}@media screen and (prefers-color-scheme:dark){body{background-color:#000;color:#fff}}</style><pre style=word-wrap:break-word;white-space:pre-wrap>")
+			res.WriteString(`<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<style>
+		body {
+			background-color: white;
+			color: black;
+		}
+		@media screen and (prefers-color-scheme: dark) {
+			body{
+				background-color: black;
+				color: white;
+			}
+		}
+		pre {
+			word-wrap: break-word;
+			white-space: pre-wrap;
+		}
+	</style>
+</head>
+<body>
+	<pre>`)
 			template.HTMLEscape(&res, text)
-			res.WriteString("</pre>")
+			res.WriteString(`</pre>
+</body>
+</html>`)
 		} else {
 			res.Write(text)
 		}
