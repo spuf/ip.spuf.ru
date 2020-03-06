@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            background-color: white;
+            color: black;
+        }
+        @media screen and (prefers-color-scheme: dark) {
+            body{
+                background-color: black;
+                color: white;
+            }
+        }
+        pre {
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+    </style>
+    <title>ip.spuf.ru</title>
+</head>
+<body>
+<pre>{{ .UserIp }}
+
+{{ printf "%s" .Request }}</pre>
+</body>
+</html>

@@ -1,0 +1,3 @@
+{{ .UserIp }}
+
+{{ printf "%s" .Request }}
