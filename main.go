@@ -1,20 +1,22 @@
 package main
 
 import (
+	"fmt"
 	"html/template"
+	"io/ioutil"
+	"mime"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
+
+	"github.com/markbates/pkger"
+	_ "nhooyr.io/websocket"
 
 	"github.com/spuf/ip.spuf.ru/request_dumper"
 )
 
 func main() {
-	http.Handle("/favicon.ico", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "image/x-icon")
-		http.ServeFile(w, r, "./assets/favicon.ico")
-	}))
-
 	dumper := request_dumper.NewRequestDumper()
 	http.Handle("/", newHandler(dumper))
 
@@ -28,17 +30,62 @@ func main() {
 }
 
 func newHandler(dumper request_dumper.RequestDumper) http.Handler {
-	templates := template.Must(template.ParseFiles("./assets/index.html", "./assets/index.txt"))
-	contentText := "text/plain"
-	contentHtml := "text/html"
-	templatesMap := map[string]string{
-		contentText: "index.txt",
-		contentHtml: "index.html",
+	defaultContentType := "text/plain"
+	var templates *template.Template
+	if err := pkger.Walk("/static/templates", func(path string, info os.FileInfo, err error) error {
+		if info.IsDir() {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+
+		contentType := mime.TypeByExtension(filepath.Ext(path))
+		if contentType == "" {
+			return fmt.Errorf("unknow content type for %v", path)
+		}
+		p := strings.SplitN(contentType, ";", 2)
+		contentType = p[0]
+		f, err := pkger.Open(path)
+		if err != nil {
+			return err
+		}
+		content, err := ioutil.ReadAll(f)
+		if err != nil {
+			return err
+		}
+
+		var tmpl *template.Template
+		if templates == nil {
+			templates = template.New(contentType)
+		}
+		if contentType == templates.Name() {
+			tmpl = templates
+		} else {
+			tmpl = templates.New(contentType)
+		}
+		if _, err := tmpl.Parse(string(content)); err != nil {
+			return err
+		}
+
+		return nil
+	}); err != nil {
+		panic(err)
 	}
+
+	if t := templates.Lookup(defaultContentType); t == nil {
+		panic(fmt.Errorf("default content type %v not found", defaultContentType))
+	}
+	var availableContentTypes []string
+	for _, t := range templates.Templates() {
+		availableContentTypes = append(availableContentTypes, t.Name())
+	}
+
+	fs := http.FileServer(pkger.Dir("/static/public"))
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
-			http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+			fs.ServeHTTP(w, r)
 			return
 		}
 
@@ -47,12 +94,12 @@ func newHandler(dumper request_dumper.RequestDumper) http.Handler {
 			panic(err)
 		}
 
-		contentType := selectContentType(r.Header.Get("Accept"), []string{contentHtml, contentText}, contentText)
+		contentType := selectContentType(r.Header.Get("Accept"), availableContentTypes, defaultContentType)
 
 		w.Header().Set("Content-Type", contentType)
 		w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
 
-		if err := templates.ExecuteTemplate(w, templatesMap[contentType], requestDump); err != nil {
+		if err := templates.ExecuteTemplate(w, contentType, requestDump); err != nil {
 			panic(err)
 		}
 	})

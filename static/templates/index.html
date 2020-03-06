@@ -8,12 +8,14 @@
             background-color: white;
             color: black;
         }
+
         @media screen and (prefers-color-scheme: dark) {
-            body{
+            body {
                 background-color: black;
                 color: white;
             }
         }
+
         pre {
             word-wrap: break-word;
             white-space: pre-wrap;
@@ -24,6 +26,6 @@
 <body>
 <pre>{{ .UserIp }}
 
-{{ printf "%s" .Request }}</pre>
+    {{ printf "%s" .Request }}</pre>
 </body>
 </html>
