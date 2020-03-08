@@ -11,9 +11,9 @@ import (
 	"strings"
 
 	"github.com/markbates/pkger"
-	_ "nhooyr.io/websocket"
 
 	"github.com/spuf/ip.spuf.ru/request_dumper"
+	"github.com/spuf/ip.spuf.ru/websocket_ping"
 )
 
 func main() {
@@ -82,8 +82,14 @@ func newHandler(dumper request_dumper.RequestDumper) http.Handler {
 	}
 
 	fs := http.FileServer(pkger.Dir("/static/public"))
+	ws := websocket_ping.NewWebsocketPing()
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/ws" {
+			ws.ServeHTTP(w, r)
+			return
+		}
+
 		if r.URL.Path != "/" {
 			fs.ServeHTTP(w, r)
 			return
