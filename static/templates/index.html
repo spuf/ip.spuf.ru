@@ -27,5 +27,66 @@
 <pre>{{ .UserIp }}
 
 {{ printf "%s" .Request }}</pre>
+<pre id="ping"></pre>
+<script>
+    (function () {
+        let now = function () {
+            return Date.now()
+        }
+        if (performance && typeof performance.now === 'function') {
+            now = function () {
+                return performance.now()
+            }
+        }
+
+        function print(ts) {
+            const elem = document.getElementById('ping')
+            if (ts > 0) {
+                elem.innerText = 'Ping: ' + Math.round(now() - ts).toString() + 'ms'
+            } else {
+                elem.innerText = ''
+            }
+        }
+
+        let isConnected = false
+        let isConnecting = false
+
+
+
+        function connect() {
+            if (isConnected || isConnecting) {
+                return
+            }
+            isConnecting = true
+
+            const ws = new WebSocket('ws://' + location.host + '/ws', ['timestamp-ping'])
+
+            function ping() {
+                ws.send(JSON.stringify(now()))
+            }
+
+            function handleDisconnect() {
+                isConnected = false
+                isConnecting = false
+                print()
+                setTimeout(connect, 1000)
+            }
+            ws.addEventListener('close', handleDisconnect)
+            ws.addEventListener('error', handleDisconnect)
+            ws.addEventListener('open', function () {
+                isConnected = true
+                isConnecting = false
+                setTimeout(ping, 0)
+            })
+
+            ws.addEventListener('message', function (event) {
+                print(JSON.parse(event.data))
+                setTimeout(ping, 1000)
+            })
+        }
+
+        connect()
+    })()
+</script>
 </body>
 </html>
